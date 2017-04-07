@@ -104,12 +104,14 @@ enum algos {
 	ALGO_SCRYPT,		/* scrypt(1024,1,1) */
 	ALGO_SHA256D,		/* SHA-256d */
     ALGO_SKEIN,         /* Skein-512 + SHA256 */
+    ALGO_LYRA2REV2,     /* Lyra2re V2 */
 };
 
 static const char *algo_names[] = {
 	[ALGO_SCRYPT]		= "scrypt",
 	[ALGO_SHA256D]		= "sha256d",
     [ALGO_SKEIN]        = "skein",
+    [ALGO_LYRA2REV2]    = "lyra2rev2",
 };
 
 bool opt_debug = false;
@@ -172,6 +174,7 @@ static char const usage[] = "\
 Usage: " PROGRAM_NAME " [OPTIONS]\n\
 Options:\n\
   -a, --algo=ALGO       specify the algorithm to use\n\
+                          lyra2rev2 Lyra2re V2\n\
                           scrypt    scrypt(1024, 1, 1) (default)\n\
                           scrypt:N  scrypt(N, 1, 1)\n\
                           sha256d   SHA-256d\n\
@@ -1046,6 +1049,8 @@ static void stratum_gen_work(struct stratum_ctx *sctx, struct work *work)
 
 	if (opt_algo == ALGO_SCRYPT)
 		diff_to_target(work->target, sctx->job.diff / 65536.0);
+    else if (opt_algo == ALGO_LYRA2REV2)
+        diff_to_target(work->target, sctx->job.diff / 256.0);
 	else
 		diff_to_target(work->target, sctx->job.diff);
 }
@@ -1144,6 +1149,9 @@ static void *miner_thread(void *userdata)
             case ALGO_SKEIN:
                 max64 = 0x7ffff;
                 break;
+            case ALGO_LYRA2REV2:
+                max64 = 0xffff;
+                break;
 			case ALGO_SHA256D:
 				max64 = 0x1fffff;
 				break;
@@ -1173,6 +1181,10 @@ static void *miner_thread(void *userdata)
             rc = scanhash_skein(thr_id, work.data, work.target, max_nonce, &hashes_done);
             break;
 
+        case ALGO_LYRA2REV2:
+            rc = scanhash_lyra2rev2(thr_id, work.data, work.target, max_nonce, &hashes_done);
+            break;
+            
 		default:
 			/* should never happen */
 			goto out;
@@ -1514,6 +1526,10 @@ static void parse_arg(int key, char *arg, char *pname)
 				}
 			}
 		}
+        // some aliases
+        if (!strcasecmp("lyra2v2", arg))
+            i = opt_algo = ALGO_LYRA2REV2;
+        
 		if (i == ARRAY_SIZE(algo_names)) {
 			fprintf(stderr, "%s: unknown algorithm -- '%s'\n",
 				pname, arg);
