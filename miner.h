@@ -151,6 +151,19 @@ void sha256_transform_8way(uint32_t *state, const uint32_t *block, int swap);
 #endif
 #endif
 
+struct work {
+	uint32_t data[32];
+	uint32_t target[8];
+
+	int height;
+	char *txs;
+	char *workid;
+
+	char *job_id;
+	size_t xnonce2_len;
+	unsigned char *xnonce2;
+};
+
 extern int scanhash_sha256d(int thr_id, uint32_t *pdata,
 	const uint32_t *ptarget, uint32_t max_nonce, unsigned long *hashes_done);
 
@@ -159,6 +172,8 @@ extern int scanhash_scrypt(int thr_id, uint32_t *pdata,
 	unsigned char *scratchbuf, const uint32_t *ptarget,
 	uint32_t max_nonce, unsigned long *hashes_done, int N);
 
+extern int scanhash_skein(int thr_id, uint32_t *pdata, const uint32_t *ptarget, uint32_t max_nonce, uint64_t *hashes_done);
+    
 struct thr_info {
 	int		id;
 	pthread_t	pth;

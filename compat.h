@@ -18,4 +18,8 @@ static inline int setpriority(int which, int who, int prio)
 
 #endif /* WIN32 */
 
+#ifndef _MSC_VER
+#define _ALIGN(x) __attribute__ ((aligned(x)))
+#endif
+
 #endif /* __COMPAT_H__ */

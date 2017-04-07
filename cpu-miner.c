@@ -103,11 +103,13 @@ struct workio_cmd {
 enum algos {
 	ALGO_SCRYPT,		/* scrypt(1024,1,1) */
 	ALGO_SHA256D,		/* SHA-256d */
+    ALGO_SKEIN,         /* Skein-512 + SHA256 */
 };
 
 static const char *algo_names[] = {
 	[ALGO_SCRYPT]		= "scrypt",
 	[ALGO_SHA256D]		= "sha256d",
+    [ALGO_SKEIN]        = "skein",
 };
 
 bool opt_debug = false;
@@ -128,7 +130,7 @@ static int opt_fail_pause = 30;
 int opt_timeout = 0;
 static int opt_scantime = 5;
 static const bool opt_time = true;
-static enum algos opt_algo = ALGO_SCRYPT;
+static enum algos opt_algo = ALGO_SKEIN;
 static int opt_scrypt_n = 1024;
 static int opt_n_threads;
 static int num_processors;
@@ -173,6 +175,7 @@ Options:\n\
                           scrypt    scrypt(1024, 1, 1) (default)\n\
                           scrypt:N  scrypt(N, 1, 1)\n\
                           sha256d   SHA-256d\n\
+                          skein     Skein\n\
   -o, --url=URL         URL of mining server\n\
   -O, --userpass=U:P    username:password pair for mining server\n\
   -u, --user=USERNAME   username for mining server\n\
@@ -254,19 +257,6 @@ static struct option const options[] = {
 	{ "userpass", 1, NULL, 'O' },
 	{ "version", 0, NULL, 'V' },
 	{ 0, 0, 0, 0 }
-};
-
-struct work {
-	uint32_t data[32];
-	uint32_t target[8];
-
-	int height;
-	char *txs;
-	char *workid;
-
-	char *job_id;
-	size_t xnonce2_len;
-	unsigned char *xnonce2;
 };
 
 static struct work g_work;
@@ -1151,6 +1141,9 @@ static void *miner_thread(void *userdata)
 			case ALGO_SCRYPT:
 				max64 = opt_scrypt_n < 16 ? 0x3ffff : 0x3fffff / opt_scrypt_n;
 				break;
+            case ALGO_SKEIN:
+                max64 = 0x7ffff;
+                break;
 			case ALGO_SHA256D:
 				max64 = 0x1fffff;
 				break;
@@ -1175,6 +1168,10 @@ static void *miner_thread(void *userdata)
 			rc = scanhash_sha256d(thr_id, work.data, work.target,
 			                      max_nonce, &hashes_done);
 			break;
+            
+        case ALGO_SKEIN:
+            rc = scanhash_skein(thr_id, work.data, work.target, max_nonce, &hashes_done);
+            break;
 
 		default:
 			/* should never happen */

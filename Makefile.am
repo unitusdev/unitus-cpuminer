@@ -9,7 +9,9 @@ EXTRA_DIST	= example-cfg.json nomacro.pl
 
 SUBDIRS		= compat
 
-INCLUDES	= $(PTHREAD_FLAGS) -fno-strict-aliasing $(JANSSON_INCLUDES)
+AM_CPPFLAGS	= $(PTHREAD_FLAGS) -fno-strict-aliasing $(JANSSON_INCLUDES)
+
+AUTOMAKE_OPTIONS = subdir-objects
 
 bin_PROGRAMS	= minerd
 
@@ -17,7 +19,9 @@ dist_man_MANS	= minerd.1
 
 minerd_SOURCES	= elist.h miner.h compat.h \
 		  cpu-miner.c util.c \
-		  sha2.c scrypt.c
+		  sha2.c scrypt.c \
+		  sha3/sph_types.h \
+		  algo/skein.c sha3/sph_skein.h sha3/sph_skein.c
 if USE_ASM
 if ARCH_x86
 minerd_SOURCES += sha2-x86.S scrypt-x86.S
