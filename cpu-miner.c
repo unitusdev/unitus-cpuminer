@@ -105,6 +105,7 @@ enum algos {
 	ALGO_SHA256D,		/* SHA-256d */
     ALGO_SKEIN,         /* Skein-512 + SHA256 */
     ALGO_LYRA2REV2,     /* Lyra2re V2 */
+    ALGO_X11,           /* X11 */
 };
 
 static const char *algo_names[] = {
@@ -112,6 +113,7 @@ static const char *algo_names[] = {
 	[ALGO_SHA256D]		= "sha256d",
     [ALGO_SKEIN]        = "skein",
     [ALGO_LYRA2REV2]    = "lyra2rev2",
+    [ALGO_X11]          = "x11",
 };
 
 bool opt_debug = false;
@@ -179,6 +181,7 @@ Options:\n\
                           scrypt:N  scrypt(N, 1, 1)\n\
                           sha256d   SHA-256d\n\
                           skein     Skein\n\
+                          x11       X11\n\
   -o, --url=URL         URL of mining server\n\
   -O, --userpass=U:P    username:password pair for mining server\n\
   -u, --user=USERNAME   username for mining server\n\
@@ -1155,6 +1158,9 @@ static void *miner_thread(void *userdata)
 			case ALGO_SHA256D:
 				max64 = 0x1fffff;
 				break;
+            case ALGO_X11:
+                max64 = 0x3ffff;
+                break;
 			}
 		}
 		if (work.data[19] + max64 > end_nonce)
@@ -1183,6 +1189,10 @@ static void *miner_thread(void *userdata)
 
         case ALGO_LYRA2REV2:
             rc = scanhash_lyra2rev2(thr_id, work.data, work.target, max_nonce, &hashes_done);
+            break;
+            
+        case ALGO_X11:
+            rc = scanhash_x11(thr_id, work.data, work.target, max_nonce, &hashes_done);
             break;
             
 		default:

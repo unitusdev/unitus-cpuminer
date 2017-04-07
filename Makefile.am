@@ -20,14 +20,23 @@ dist_man_MANS	= minerd.1
 minerd_SOURCES	= elist.h miner.h compat.h \
 		  cpu-miner.c util.c \
 		  sha2.c scrypt.c \
-		  sha3/sph_types.h \
-		  sha3/sph_skein.h sha3/sph_skein.c \
+		  sha3/sph_types.h sha3/aes_helper.c \
 		  sha3/sph_blake.h sha3/sph_blake.c \
 		  sha3/sph_bmw.h sha3/sph_bmw.c \
 		  sha3/sph_cubehash.h sha3/sph_cubehash.c \
+		  sha3/sph_echo.h sha3/sph_echo.c \
+		  sha3/sph_groestl.h sha3/sph_groestl.c \
+		  sha3/sph_jh.h sha3/sph_jh.c \
 		  sha3/sph_keccak.h sha3/sph_keccak.c \
+		  sha3/sph_luffa.h sha3/sph_luffa.c \
+		  sha3/sph_shavite.h sha3/sph_shavite.c \
+		  sha3/sph_simd.h sha3/sph_simd.c \
+		  sha3/sph_skein.h sha3/sph_skein.c \
 		  algo/lyra2rev2.c algo/Lyra2.h algo/Lyra2.c algo/Sponge.h algo/Sponge.c \
-		  algo/skein.c 
+		  algo/skein.c \
+		  algo/x11.c \
+		  algo/sha256_Y.h algo/sha256_Y.c algo/sysendian.h algo/yescrypt.h \
+		  algo/yescrypt-best.c algo/yescrypt-common.c algo/yescrypt-platform.h
 if USE_ASM
 if ARCH_x86
 minerd_SOURCES += sha2-x86.S scrypt-x86.S
