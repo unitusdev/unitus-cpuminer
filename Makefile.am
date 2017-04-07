@@ -35,7 +35,7 @@ minerd_SOURCES	= elist.h miner.h compat.h \
 		  algo/lyra2rev2.c algo/Lyra2.h algo/Lyra2.c algo/Sponge.h algo/Sponge.c \
 		  algo/skein.c \
 		  algo/x11.c \
-		  algo/sha256_Y.h algo/sha256_Y.c algo/sysendian.h algo/yescrypt.h \
+		  algo/sha256_Y.h algo/sha256_Y.c algo/sysendian.h algo/yescrypt.h algo/yescrypt.c \
 		  algo/yescrypt-best.c algo/yescrypt-common.c algo/yescrypt-platform.h
 if USE_ASM
 if ARCH_x86

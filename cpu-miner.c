@@ -106,6 +106,7 @@ enum algos {
     ALGO_SKEIN,         /* Skein-512 + SHA256 */
     ALGO_LYRA2REV2,     /* Lyra2re V2 */
     ALGO_X11,           /* X11 */
+    ALGO_YESCRYPT,       /* Yescrypt */
 };
 
 static const char *algo_names[] = {
@@ -114,6 +115,7 @@ static const char *algo_names[] = {
     [ALGO_SKEIN]        = "skein",
     [ALGO_LYRA2REV2]    = "lyra2rev2",
     [ALGO_X11]          = "x11",
+    [ALGO_YESCRYPT]     = "yescrypt",
 };
 
 bool opt_debug = false;
@@ -182,6 +184,7 @@ Options:\n\
                           sha256d   SHA-256d\n\
                           skein     Skein\n\
                           x11       X11\n\
+                          yescrypt  Yescrypt\n\
   -o, --url=URL         URL of mining server\n\
   -O, --userpass=U:P    username:password pair for mining server\n\
   -u, --user=USERNAME   username for mining server\n\
@@ -1050,7 +1053,7 @@ static void stratum_gen_work(struct stratum_ctx *sctx, struct work *work)
 		free(xnonce2str);
 	}
 
-	if (opt_algo == ALGO_SCRYPT)
+	if (opt_algo == ALGO_SCRYPT || opt_algo == ALGO_YESCRYPT)
 		diff_to_target(work->target, sctx->job.diff / 65536.0);
     else if (opt_algo == ALGO_LYRA2REV2)
         diff_to_target(work->target, sctx->job.diff / 256.0);
@@ -1161,6 +1164,9 @@ static void *miner_thread(void *userdata)
             case ALGO_X11:
                 max64 = 0x3ffff;
                 break;
+            case ALGO_YESCRYPT:
+                max64 = 0x1ff;
+                break;
 			}
 		}
 		if (work.data[19] + max64 > end_nonce)
@@ -1194,6 +1200,10 @@ static void *miner_thread(void *userdata)
         case ALGO_X11:
             rc = scanhash_x11(thr_id, work.data, work.target, max_nonce, &hashes_done);
             break;
+        
+        case ALGO_YESCRYPT:
+            rc = scanhash_yescrypt(thr_id, work.data, work.target, max_nonce, &hashes_done);
+            break;
             
 		default:
 			/* should never happen */
@@ -1210,10 +1220,17 @@ static void *miner_thread(void *userdata)
 			pthread_mutex_unlock(&stats_lock);
 		}
 		if (!opt_quiet) {
-			sprintf(s, thr_hashrates[thr_id] >= 1e6 ? "%.0f" : "%.2f",
-				1e-3 * thr_hashrates[thr_id]);
-			applog(LOG_INFO, "thread %d: %lu hashes, %s khash/s",
-				thr_id, hashes_done, s);
+            switch(opt_algo) {
+                case ALGO_YESCRYPT:
+                   sprintf(s, thr_hashrates[thr_id] >= 1e6 ? "%.0f" : "%.2f", thr_hashrates[thr_id]);
+                   applog(LOG_INFO, "thread %d: %lu hashes, %s hash/s", thr_id, hashes_done, s);
+                   break;
+                   
+                default:
+                   sprintf(s, thr_hashrates[thr_id] >= 1e6 ? "%.0f" : "%.2f", 1e-3 * thr_hashrates[thr_id]);
+                   applog(LOG_INFO, "thread %d: %lu hashes, %s khash/s", thr_id, hashes_done, s);
+                   break;
+            }
 		}
 		if (opt_benchmark && thr_id == opt_n_threads - 1) {
 			double hashrate = 0.;

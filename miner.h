@@ -175,6 +175,7 @@ extern int scanhash_scrypt(int thr_id, uint32_t *pdata,
 extern int scanhash_skein(int thr_id, uint32_t *pdata, const uint32_t *ptarget, uint32_t max_nonce, uint64_t *hashes_done);
 extern int scanhash_lyra2rev2(int thr_id, uint32_t *pdata, const uint32_t *ptarget, uint32_t max_nonce, uint64_t *hashes_done);
 extern int scanhash_x11(int thr_id, uint32_t *pdata, const uint32_t *ptarget, uint32_t max_nonce, uint64_t *hashes_done);
+extern int scanhash_yescrypt(int thr_id, uint32_t *pdata, const uint32_t *ptarget, uint32_t max_nonce, uint64_t *hashes_done);
     
 struct thr_info {
 	int		id;
