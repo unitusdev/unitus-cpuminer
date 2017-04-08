@@ -106,7 +106,8 @@ enum algos {
     ALGO_SKEIN,         /* Skein-512 + SHA256 */
     ALGO_LYRA2REV2,     /* Lyra2re V2 */
     ALGO_X11,           /* X11 */
-    ALGO_YESCRYPT,       /* Yescrypt */
+    ALGO_YESCRYPT,      /* Yescrypt */
+    ALGO_ARGON2D,       /* Argon2d */
 };
 
 static const char *algo_names[] = {
@@ -116,6 +117,7 @@ static const char *algo_names[] = {
     [ALGO_LYRA2REV2]    = "lyra2rev2",
     [ALGO_X11]          = "x11",
     [ALGO_YESCRYPT]     = "yescrypt",
+    [ALGO_ARGON2D]      = "argon2d",
 };
 
 bool opt_debug = false;
@@ -178,6 +180,7 @@ static char const usage[] = "\
 Usage: " PROGRAM_NAME " [OPTIONS]\n\
 Options:\n\
   -a, --algo=ALGO       specify the algorithm to use\n\
+                          argon2d   Argon2d\n\
                           lyra2rev2 Lyra2re V2\n\
                           scrypt    scrypt(1024, 1, 1) (default)\n\
                           scrypt:N  scrypt(N, 1, 1)\n\
@@ -1165,6 +1168,7 @@ static void *miner_thread(void *userdata)
                 max64 = 0x3ffff;
                 break;
             case ALGO_YESCRYPT:
+            case ALGO_ARGON2D:
                 max64 = 0x1ff;
                 break;
 			}
@@ -1205,6 +1209,10 @@ static void *miner_thread(void *userdata)
             rc = scanhash_yescrypt(thr_id, work.data, work.target, max_nonce, &hashes_done);
             break;
             
+        case ALGO_ARGON2D:
+            rc = scanhash_argon2d(thr_id, work.data, work.target, max_nonce, &hashes_done);
+            break;
+            
 		default:
 			/* should never happen */
 			goto out;
@@ -1222,6 +1230,7 @@ static void *miner_thread(void *userdata)
 		if (!opt_quiet) {
             switch(opt_algo) {
                 case ALGO_YESCRYPT:
+                case ALGO_ARGON2D:
                    sprintf(s, thr_hashrates[thr_id] >= 1e6 ? "%.0f" : "%.2f", thr_hashrates[thr_id]);
                    applog(LOG_INFO, "thread %d: %lu hashes, %s hash/s", thr_id, hashes_done, s);
                    break;
@@ -1237,8 +1246,18 @@ static void *miner_thread(void *userdata)
 			for (i = 0; i < opt_n_threads && thr_hashrates[i]; i++)
 				hashrate += thr_hashrates[i];
 			if (i == opt_n_threads) {
-				sprintf(s, hashrate >= 1e6 ? "%.0f" : "%.2f", 1e-3 * hashrate);
-				applog(LOG_INFO, "Total: %s khash/s", s);
+                switch(opt_algo) {
+                    case ALGO_YESCRYPT:
+                    case ALGO_ARGON2D:
+                        sprintf(s, hashrate >= 1e6 ? "%.0f" : "%.2f", hashrate);
+                        applog(LOG_INFO, "Total: %s hash/s", s);
+                        break;
+                        
+                    default:
+                        sprintf(s, hashrate >= 1e6 ? "%.0f" : "%.2f", 1e-3 * hashrate);
+                        applog(LOG_INFO, "Total: %s khash/s", s);
+                        break;
+                }
 			}
 		}
 

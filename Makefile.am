@@ -36,7 +36,10 @@ minerd_SOURCES	= elist.h miner.h compat.h \
 		  algo/skein.c \
 		  algo/x11.c \
 		  algo/sha256_Y.h algo/sha256_Y.c algo/sysendian.h algo/yescrypt.h algo/yescrypt.c \
-		  algo/yescrypt-best.c algo/yescrypt-common.c algo/yescrypt-platform.h
+		  algo/yescrypt-best.c algo/yescrypt-common.c algo/yescrypt-platform.h \
+		  algo/argon2d.c algo/argon2/argon2.c algo/argon2/argon2.h algo/argon2/blake2.h algo/argon2/blake2b.c \
+		  algo/argon2/blake2-impl.h algo/argon2/blamka-round-opt.h algo/argon2/core.c algo/argon2/core.h \
+		  algo/argon2/encoding.c algo/argon2/enconding.h algo/argon2/opt.c algo/argon2/opt.h algo/argon2/thread.c algo/argon2/thread.h
 if USE_ASM
 if ARCH_x86
 minerd_SOURCES += sha2-x86.S scrypt-x86.S
