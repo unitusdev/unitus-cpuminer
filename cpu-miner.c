@@ -38,7 +38,7 @@
 #include "compat.h"
 #include "miner.h"
 
-#define PROGRAM_NAME		"minerd"
+#define PROGRAM_NAME		"unitus_cpuminer"
 #define LP_SCANTIME		60
 
 #ifdef __linux /* Linux specific policy and affinity management */
@@ -101,8 +101,6 @@ struct workio_cmd {
 };
 
 enum algos {
-	ALGO_SCRYPT,		/* scrypt(1024,1,1) */
-	ALGO_SHA256D,		/* SHA-256d */
     ALGO_SKEIN,         /* Skein-512 + SHA256 */
     ALGO_LYRA2REV2,     /* Lyra2re V2 */
     ALGO_X11,           /* X11 */
@@ -111,8 +109,6 @@ enum algos {
 };
 
 static const char *algo_names[] = {
-	[ALGO_SCRYPT]		= "scrypt",
-	[ALGO_SHA256D]		= "sha256d",
     [ALGO_SKEIN]        = "skein",
     [ALGO_LYRA2REV2]    = "lyra2rev2",
     [ALGO_X11]          = "x11",
@@ -139,7 +135,6 @@ int opt_timeout = 0;
 static int opt_scantime = 5;
 static const bool opt_time = true;
 static enum algos opt_algo = ALGO_SKEIN;
-static int opt_scrypt_n = 1024;
 static int opt_n_threads;
 static int num_processors;
 static char *rpc_url;
@@ -184,9 +179,6 @@ Options:\n\
   -a, --algo=ALGO       specify the algorithm to use\n\
                           argon2d   Argon2d\n\
                           lyra2rev2 Lyra2re V2\n\
-                          scrypt    scrypt(1024, 1, 1) (default)\n\
-                          scrypt:N  scrypt(N, 1, 1)\n\
-                          sha256d   SHA-256d\n\
                           skein     Skein\n\
                           x11       X11\n\
                           yescrypt  Yescrypt\n\
@@ -1065,7 +1057,7 @@ static void stratum_gen_work(struct stratum_ctx *sctx, struct work *work)
 		free(xnonce2str);
 	}
 
-	if (opt_algo == ALGO_SCRYPT || opt_algo == ALGO_YESCRYPT || opt_algo == ALGO_ARGON2D)
+	if (opt_algo == ALGO_YESCRYPT || opt_algo == ALGO_ARGON2D)
 		diff_to_target(work->target, sctx->job.diff / 65536.0);
     else if (opt_algo == ALGO_LYRA2REV2)
         diff_to_target(work->target, sctx->job.diff / 256.0);
@@ -1106,15 +1098,6 @@ static void *miner_thread(void *userdata)
 		affine_to_cpu(thr_id, thr_id % num_processors);
 	}
 	
-	if (opt_algo == ALGO_SCRYPT) {
-		scratchbuf = scrypt_buffer_alloc(opt_scrypt_n);
-		if (!scratchbuf) {
-			applog(LOG_ERR, "scrypt buffer allocation failed");
-			pthread_mutex_lock(&applog_lock);
-			exit(1);
-		}
-	}
-
 	while (1) {
 		unsigned long hashes_done;
 		struct timeval tv_start, tv_end, diff;
@@ -1166,18 +1149,12 @@ static void *miner_thread(void *userdata)
 		max64 *= thr_hashrates[thr_id];
 		if (max64 <= 0) {
 			switch (opt_algo) {
-			case ALGO_SCRYPT:
-				max64 = opt_scrypt_n < 16 ? 0x3ffff : 0x3fffff / opt_scrypt_n;
-				break;
             case ALGO_SKEIN:
                 max64 = 0x7ffff;
                 break;
             case ALGO_LYRA2REV2:
                 max64 = 0xffff;
                 break;
-			case ALGO_SHA256D:
-				max64 = 0x1fffff;
-				break;
             case ALGO_X11:
                 max64 = 0x3ffff;
                 break;
@@ -1197,16 +1174,6 @@ static void *miner_thread(void *userdata)
 
 		/* scan nonces for a proof-of-work hash */
 		switch (opt_algo) {
-		case ALGO_SCRYPT:
-			rc = scanhash_scrypt(thr_id, work.data, scratchbuf, work.target,
-			                     max_nonce, &hashes_done, opt_scrypt_n);
-			break;
-
-		case ALGO_SHA256D:
-			rc = scanhash_sha256d(thr_id, work.data, work.target,
-			                      max_nonce, &hashes_done);
-			break;
-            
         case ALGO_SKEIN:
             rc = scanhash_skein(thr_id, work.data, work.target, max_nonce, &hashes_done);
             break;
@@ -1582,15 +1549,6 @@ static void parse_arg(int key, char *arg, char *pname)
 			if (!strncmp(arg, algo_names[i], v)) {
 				if (arg[v] == '\0') {
 					opt_algo = i;
-					break;
-				}
-				if (arg[v] == ':' && i == ALGO_SCRYPT) {
-					char *ep;
-					v = strtol(arg+v+1, &ep, 10);
-					if (*ep || v & (v-1) || v < 2)
-						continue;
-					opt_algo = i;
-					opt_scrypt_n = v;
 					break;
 				}
 			}

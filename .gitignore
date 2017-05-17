@@ -1,6 +1,6 @@
 
-minerd
-minerd.exe
+unitus_cpuminer
+unitus_cpuminer.exe
 *.o
 .dirstamp
 autom4te.cache

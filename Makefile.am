@@ -13,13 +13,13 @@ AM_CPPFLAGS	= $(PTHREAD_FLAGS) -fno-strict-aliasing $(JANSSON_INCLUDES)
 
 AUTOMAKE_OPTIONS = subdir-objects
 
-bin_PROGRAMS	= minerd
+bin_PROGRAMS	= unitus_cpuminer
 
 dist_man_MANS	= minerd.1
 
-minerd_SOURCES	= elist.h miner.h compat.h \
+unitus_cpuminer_SOURCES	= elist.h miner.h compat.h \
 		  cpu-miner.c util.c \
-		  sha2.c scrypt.c \
+		  sha2.c \
 		  sha3/sph_types.h sha3/aes_helper.c \
 		  sha3/sph_blake.h sha3/sph_blake.c \
 		  sha3/sph_bmw.h sha3/sph_bmw.c \
@@ -42,19 +42,19 @@ minerd_SOURCES	= elist.h miner.h compat.h \
 		  algo/argon2/encoding.c algo/argon2/enconding.h algo/argon2/opt.c algo/argon2/opt.h algo/argon2/thread.c algo/argon2/thread.h
 if USE_ASM
 if ARCH_x86
-minerd_SOURCES += sha2-x86.S scrypt-x86.S
+unitus_cpuminer_SOURCES += sha2-x86.S
 endif
 if ARCH_x86_64
-minerd_SOURCES += sha2-x64.S scrypt-x64.S
+unitus_cpuminer_SOURCES += sha2-x64.S
 endif
 if ARCH_ARM
-minerd_SOURCES += sha2-arm.S scrypt-arm.S
+unitus_cpuminer_SOURCES += sha2-arm.S
 endif
 if ARCH_PPC
-minerd_SOURCES += sha2-ppc.S scrypt-ppc.S
+unitus_cpuminer_SOURCES += sha2-ppc.S
 endif
 endif
-minerd_LDFLAGS	= $(PTHREAD_FLAGS)
-minerd_LDADD	= @LIBCURL@ @JANSSON_LIBS@ @PTHREAD_LIBS@ @WS2_LIBS@
-minerd_CPPFLAGS = @LIBCURL_CPPFLAGS@
+unitus_cpuminer_LDFLAGS	= $(PTHREAD_FLAGS)
+unitus_cpuminer_LDADD	= @LIBCURL@ @JANSSON_LIBS@ @PTHREAD_LIBS@ @WS2_LIBS@
+unitus_cpuminer_CPPFLAGS = @LIBCURL_CPPFLAGS@
 
