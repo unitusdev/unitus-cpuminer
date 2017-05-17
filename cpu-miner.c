@@ -1394,6 +1394,12 @@ out:
 	return ret;
 }
 
+#ifdef WIN32
+#include <winsock2.h>
+#include <sys/param.h>
+#define be32toh(x) ntohl(x)
+#endif
+
 void print_block_network_diff(struct stratum_job *job) {
     uint8_t pow = job->nbits[0];
     int powdiff = (8 * (0x1d - 3)) - (8 * (pow - 3));
