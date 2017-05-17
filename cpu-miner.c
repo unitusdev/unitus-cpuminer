@@ -86,7 +86,7 @@ static inline void affine_to_cpu(int id, int cpu)
 {
 }
 #endif
-		
+
 enum workio_commands {
 	WC_GET_WORK,
 	WC_SUBMIT_WORK,
@@ -157,6 +157,8 @@ int longpoll_thr_id = -1;
 int stratum_thr_id = -1;
 struct work_restart *work_restart = NULL;
 static struct stratum_ctx stratum;
+
+double stratum_diff = 0.;
 
 pthread_mutex_t applog_lock;
 static pthread_mutex_t stats_lock;
@@ -621,7 +623,7 @@ out:
 	return rc;
 }
 
-static void share_result(int result, const char *reason)
+static void share_result(int result, struct work *work, const char *reason)
 {
 	char s[345];
 	double hashrate;
@@ -725,10 +727,10 @@ static bool submit_upstream_work(CURL *curl, struct work *work)
 				iter = json_object_iter_next(res, iter);
 			}
 			res_str = json_dumps(res, 0);
-			share_result(sumres, res_str);
+			share_result(sumres, work, res_str);
 			free(res_str);
 		} else
-			share_result(json_is_null(res), json_string_value(res));
+			share_result(json_is_null(res), work, json_string_value(res));
 
 		json_decref(val);
 	} else {
@@ -751,7 +753,7 @@ static bool submit_upstream_work(CURL *curl, struct work *work)
 
 		res = json_object_get(val, "result");
 		reason = json_object_get(val, "reject-reason");
-		share_result(json_is_true(res), reason ? json_string_value(reason) : NULL);
+		share_result(json_is_true(res), work, reason ? json_string_value(reason) : NULL);
 
 		json_decref(val);
 	}
@@ -1056,12 +1058,17 @@ static void stratum_gen_work(struct stratum_ctx *sctx, struct work *work)
 		free(xnonce2str);
 	}
 
-	if (opt_algo == ALGO_SCRYPT || opt_algo == ALGO_YESCRYPT)
+	if (opt_algo == ALGO_SCRYPT || opt_algo == ALGO_YESCRYPT || opt_algo == ALGO_ARGON2D)
 		diff_to_target(work->target, sctx->job.diff / 65536.0);
     else if (opt_algo == ALGO_LYRA2REV2)
         diff_to_target(work->target, sctx->job.diff / 256.0);
 	else
 		diff_to_target(work->target, sctx->job.diff);
+
+    if (stratum_diff != sctx->job.diff) {
+        stratum_diff = sctx->job.diff;
+        applog(LOG_WARNING, "Stratum difficulty set to %g", stratum_diff);
+    }
 }
 
 static void *miner_thread(void *userdata)
@@ -1402,7 +1409,7 @@ static bool stratum_handle_response(char *buf)
 	if (!id_val || json_is_null(id_val) || !res_val)
 		goto out;
 
-	share_result(json_is_true(res_val),
+	share_result(json_is_true(res_val), NULL,
 		err_val ? json_string_value(json_array_get(err_val, 1)) : NULL);
 
 	ret = true;
@@ -1411,6 +1418,15 @@ out:
 		json_decref(val);
 
 	return ret;
+}
+
+void print_block_network_diff(struct stratum_job *job) {
+    uint8_t pow = job->nbits[0];
+    int powdiff = (8 * (0x1d - 3)) - (8 * (pow - 3));
+    uint32_t diff32 = be32toh(*((uint32_t *)job->nbits)) & 0x00FFFFFF;
+    double numerator = 0xFFFFULL << powdiff;
+    double ddiff = numerator / (double)diff32;
+    applog(LOG_INFO, "Stratum detected new block, diff: %0.2f", ddiff);
 }
 
 static void *stratum_thread(void *userdata)
@@ -1453,7 +1469,7 @@ static void *stratum_thread(void *userdata)
 			time(&g_work_time);
 			pthread_mutex_unlock(&g_work_lock);
 			if (stratum.job.clean) {
-				applog(LOG_INFO, "Stratum requested work restart");
+                print_block_network_diff(&stratum.job);
 				restart_threads();
 			}
 		}
