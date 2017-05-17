@@ -134,7 +134,7 @@ static int opt_fail_pause = 30;
 int opt_timeout = 0;
 static int opt_scantime = 5;
 static const bool opt_time = true;
-static enum algos opt_algo = ALGO_SKEIN;
+static enum algos opt_algo = ALGO_YESCRYPT;
 static int opt_n_threads;
 static int num_processors;
 static char *rpc_url;
@@ -181,7 +181,7 @@ Options:\n\
                           lyra2rev2 Lyra2re V2\n\
                           skein     Skein\n\
                           x11       X11\n\
-                          yescrypt  Yescrypt\n\
+                          yescrypt  Yescrypt (default)\n\
   -o, --url=URL         URL of mining server\n\
   -O, --userpass=U:P    username:password pair for mining server\n\
   -u, --user=USERNAME   username for mining server\n\
@@ -1556,6 +1556,12 @@ static void parse_arg(int key, char *arg, char *pname)
         // some aliases
         if (!strcasecmp("lyra2v2", arg))
             i = opt_algo = ALGO_LYRA2REV2;
+        if (!strcasecmp("lyra2re2", arg))
+            i = opt_algo = ALGO_LYRA2REV2;
+        if (!strcasecmp("argon2", arg))
+            i = opt_algo = ALGO_ARGON2D;
+        if (!strcasecmp("argon", arg))
+            i = opt_algo = ALGO_ARGON2D;
         
 		if (i == ARRAY_SIZE(algo_names)) {
 			fprintf(stderr, "%s: unknown algorithm -- '%s'\n",
