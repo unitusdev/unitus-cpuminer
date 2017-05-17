@@ -91,12 +91,21 @@ void applog(int prio, const char *fmt, ...)
 	if (0) {}
 #endif
 	else {
+        const char* color = "";
 		char *f;
 		int len;
 		time_t now;
 		struct tm tm, *tm_p;
 
 		time(&now);
+
+		switch (prio) {
+			case LOG_ERR:     color = CL_RED; break;
+			case LOG_WARNING: color = CL_YLW; break;
+			case LOG_NOTICE:  color = CL_WHT; break;
+			case LOG_INFO:    color = CL_CYN; break;
+			case LOG_DEBUG:   color = CL_GRY; break;
+		}
 
 		pthread_mutex_lock(&applog_lock);
 		tm_p = localtime(&now);
@@ -105,14 +114,16 @@ void applog(int prio, const char *fmt, ...)
 
 		len = 40 + strlen(fmt) + 2;
 		f = alloca(len);
-		sprintf(f, "[%d-%02d-%02d %02d:%02d:%02d] %s\n",
+		sprintf(f, "[%d-%02d-%02d %02d:%02d:%02d]%s %s%s\n",
 			tm.tm_year + 1900,
 			tm.tm_mon + 1,
 			tm.tm_mday,
 			tm.tm_hour,
 			tm.tm_min,
 			tm.tm_sec,
-			fmt);
+            color,
+			fmt,
+            CL_N);
 		pthread_mutex_lock(&applog_lock);
 		vfprintf(stderr, f, ap);	/* atomic write to stderr */
 		fflush(stderr);

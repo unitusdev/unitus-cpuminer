@@ -212,6 +212,37 @@ extern struct work_restart *work_restart;
 #define JSON_RPC_LONGPOLL	(1 << 0)
 #define JSON_RPC_QUIET_404	(1 << 1)
 
+#define CL_N    "\x1B[0m"
+#define CL_RED  "\x1B[31m"
+#define CL_GRN  "\x1B[32m"
+#define CL_YLW  "\x1B[33m"
+#define CL_BLU  "\x1B[34m"
+#define CL_MAG  "\x1B[35m"
+#define CL_CYN  "\x1B[36m"
+
+#define CL_BLK  "\x1B[22;30m" /* black */
+#define CL_RD2  "\x1B[22;31m" /* red */
+#define CL_GR2  "\x1B[22;32m" /* green */
+#define CL_BRW  "\x1B[22;33m" /* brown */
+#define CL_BL2  "\x1B[22;34m" /* blue */
+#define CL_MA2  "\x1B[22;35m" /* magenta */
+#define CL_CY2  "\x1B[22;36m" /* cyan */
+#define CL_SIL  "\x1B[22;37m" /* gray */
+
+#ifdef WIN32
+#define CL_GRY  "\x1B[01;30m" /* dark gray */
+#else
+#define CL_GRY  "\x1B[90m"    /* dark gray selectable in putty */
+#endif
+#define CL_LRD  "\x1B[01;31m" /* light red */
+#define CL_LGR  "\x1B[01;32m" /* light green */
+#define CL_YL2  "\x1B[01;33m" /* yellow */
+#define CL_LBL  "\x1B[01;34m" /* light blue */
+#define CL_LMA  "\x1B[01;35m" /* light magenta */
+#define CL_LCY  "\x1B[01;36m" /* light cyan */
+
+#define CL_WHT  "\x1B[01;37m" /* white */
+
 extern void applog(int prio, const char *fmt, ...);
 extern json_t *json_rpc_call(CURL *curl, const char *url, const char *userpass,
 	const char *rpc_req, int *curl_err, int flags);

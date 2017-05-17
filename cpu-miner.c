@@ -623,8 +623,13 @@ out:
 	return rc;
 }
 
+#define YES "yes!"
+#define YAY "yay!!!"
+#define BOO "booooo"
+
 static void share_result(int result, struct work *work, const char *reason)
 {
+    const char *flag;
 	char s[345];
 	double hashrate;
 	int i;
@@ -637,12 +642,14 @@ static void share_result(int result, struct work *work, const char *reason)
 	pthread_mutex_unlock(&stats_lock);
 	
 	sprintf(s, hashrate >= 1e6 ? "%.0f" : "%.2f", 1e-3 * hashrate);
+
+    flag = result ? CL_GRN YES : CL_RED BOO;
+
 	applog(LOG_INFO, "accepted: %lu/%lu (%.2f%%), %s khash/s %s",
 		   accepted_count,
 		   accepted_count + rejected_count,
 		   100. * accepted_count / (accepted_count + rejected_count),
-		   s,
-		   result ? "(yay!!!)" : "(booooo)");
+		   s, flag);
 
 	if (opt_debug && reason)
 		applog(LOG_DEBUG, "DEBUG: reject reason: %s", reason);
