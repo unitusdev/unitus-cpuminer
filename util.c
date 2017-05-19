@@ -28,6 +28,7 @@
 #if defined(WIN32)
 #include <winsock2.h>
 #include <mstcpip.h>
+#include "compat/winansi.h"
 #else
 #include <sys/socket.h>
 #include <netinet/in.h>

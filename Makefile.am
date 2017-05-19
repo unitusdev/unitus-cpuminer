@@ -54,6 +54,11 @@ if ARCH_PPC
 unitus_cpuminer_SOURCES += sha2-ppc.S
 endif
 endif
+
+if HAVE_WINDOWS
+   unitus_cpuminer_SOURCES += compat/winansi.c
+endif
+
 unitus_cpuminer_LDFLAGS	= $(PTHREAD_FLAGS)
 unitus_cpuminer_LDADD	= @LIBCURL@ @JANSSON_LIBS@ @PTHREAD_LIBS@ @WS2_LIBS@
 unitus_cpuminer_CPPFLAGS = @LIBCURL_CPPFLAGS@

@@ -21,6 +21,7 @@
 #include <time.h>
 #ifdef WIN32
 #include <windows.h>
+#include "compat/winansi.h"
 #else
 #include <errno.h>
 #include <signal.h>
