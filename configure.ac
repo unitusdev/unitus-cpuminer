@@ -105,7 +105,7 @@ AC_CHECK_LIB([pthread], [pthread_create], PTHREAD_LIBS="-lpthread",
       AC_CHECK_LIB([pthreadGC], [pthread_create], PTHREAD_LIBS="-lpthreadGC"
 ))))
 
-AC_CHECK_LIB(crypto, SHA256_Init, [], [AC_MSG_ERROR([library 'crypto' is required])])
+AC_CHECK_LIB(crypto, SHA256_Init, [], AC_MSG_ERROR([library 'crypto' is required]))
 
 AM_CONDITIONAL([WANT_JANSSON], [test x$request_jansson = xtrue])
 AM_CONDITIONAL([HAVE_WINDOWS], [test x$have_win32 = xtrue])

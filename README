@@ -17,6 +17,15 @@ Basic *nix build instructions:
 	./configure CFLAGS="-O3" # Make sure -O3 is an O and not a zero!
 	make
 
+Ubuntu Instructions:
+	sudo apt-get update && sudo apt-get install -y git make automake autoconf pkg-config autotools-dev build-essential libboost-all-dev libjansson-dev libssl-dev
+	cd ~/
+	git clone https://github.com/unitusdev/unitus-cpuminer.git
+	cd unitus-cpuminer
+	./autogen.sh
+	CFLAGS="-O3 -faggressive-loop-optimizations -falign-loops -mtune=native -march=native" ./configure
+	make
+
 Notes for AIX users:
 	* To build a 64-bit binary, export OBJECT_MODE=64
 	* GNU-style long options are not supported, but are accessible
