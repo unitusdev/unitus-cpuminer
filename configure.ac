@@ -107,6 +107,8 @@ AC_CHECK_LIB([pthread], [pthread_create], PTHREAD_LIBS="-lpthread",
 
 AC_CHECK_LIB(crypto, SHA256_Init, [], AC_MSG_ERROR([library 'crypto' is required]))
 
+AC_CHECK_LIB(argon2, argon2d_hash_raw, [], AC_MSG_ERROR([library 'argon2' is required]))
+
 AM_CONDITIONAL([WANT_JANSSON], [test x$request_jansson = xtrue])
 AM_CONDITIONAL([HAVE_WINDOWS], [test x$have_win32 = xtrue])
 AM_CONDITIONAL([USE_ASM], [test x$enable_assembly != xno])

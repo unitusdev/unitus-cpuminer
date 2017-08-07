@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "algo/argon2/argon2.h"
+#include <argon2.h>
 
 int scanhash_argon2d(int thr_id, uint32_t *pdata, const uint32_t *ptarget, uint32_t max_nonce, uint64_t *hashes_done)
 {

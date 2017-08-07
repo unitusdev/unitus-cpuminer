@@ -38,6 +38,7 @@
 #include <curl/curl.h>
 #include "compat.h"
 #include "miner.h"
+#include <argon2.h>
 
 #define PROGRAM_NAME		"unitus_cpuminer"
 #define LP_SCANTIME		60
@@ -1099,6 +1100,11 @@ static void *miner_thread(void *userdata)
 		affine_to_cpu(thr_id, thr_id % num_processors);
 	}
 	
+    if(opt_algo == ALGO_ARGON2D)
+    {
+        argon2_select_impl(NULL, NULL);
+    }
+
 	while (1) {
 		unsigned long hashes_done;
 		struct timeval tv_temp, tv_start, tv_end, diff;
@@ -1880,6 +1886,11 @@ int main(int argc, char *argv[])
 			return 1;
 		sprintf(rpc_userpass, "%s:%s", rpc_user, rpc_pass);
 	}
+
+    if(opt_algo == ALGO_ARGON2D)
+    {
+        argon2_select_impl(stderr, "[Argon2d] ");
+    }
 
 	pthread_mutex_init(&applog_lock, NULL);
 	pthread_mutex_init(&stats_lock, NULL);
