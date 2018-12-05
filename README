@@ -18,7 +18,7 @@ Basic *nix build instructions:
 	make
 
 Ubuntu Instructions:
-	sudo apt-get update && sudo apt-get install -y git make automake autoconf pkg-config autotools-dev build-essential libboost-all-dev libjansson-dev libssl-dev
+	sudo apt-get update && sudo apt-get install -y git make automake autoconf pkg-config autotools-dev build-essential libboost-all-dev libjansson-dev libssl-dev libcurl4-openssl-dev
 	cd ~/
 	git clone https://github.com/unitusdev/unitus-cpuminer.git
 	cd unitus-cpuminer
