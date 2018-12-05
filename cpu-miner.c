@@ -104,6 +104,7 @@ struct workio_cmd {
 enum algos {
     ALGO_SKEIN,         /* Skein-512 + SHA256 */
     ALGO_LYRA2REV2,     /* Lyra2re V2 */
+    ALGO_LYRA2REV3,     /* Lyra2re V3 */
     ALGO_X11,           /* X11 */
     ALGO_YESCRYPT,      /* Yescrypt */
     ALGO_ARGON2D,       /* Argon2d */
@@ -112,6 +113,7 @@ enum algos {
 static const char *algo_names[] = {
     [ALGO_SKEIN]        = "skein",
     [ALGO_LYRA2REV2]    = "lyra2rev2",
+    [ALGO_LYRA2REV3]    = "lyra2rev3",
     [ALGO_X11]          = "x11",
     [ALGO_YESCRYPT]     = "yescrypt",
     [ALGO_ARGON2D]      = "argon2d",
@@ -180,6 +182,7 @@ Options:\n\
   -a, --algo=ALGO       specify the algorithm to use\n\
                           argon2d   Argon2d\n\
                           lyra2rev2 Lyra2re V2\n\
+                          lyra2rev3 Lyra2re V3\n\
                           skein     Skein\n\
                           x11       X11\n\
                           yescrypt  Yescrypt (default)\n\
@@ -1154,6 +1157,7 @@ static void *miner_thread(void *userdata)
                 max64 = 0x7ffff;
                 break;
             case ALGO_LYRA2REV2:
+            case ALGO_LYRA2REV3:
                 max64 = 0xffff;
                 break;
             case ALGO_X11:
@@ -1182,6 +1186,10 @@ static void *miner_thread(void *userdata)
 
         case ALGO_LYRA2REV2:
             rc = scanhash_lyra2rev2(thr_id, work.data, work.target, max_nonce, &hashes_done);
+            break;
+            
+        case ALGO_LYRA2REV3:
+            rc = scanhash_lyra2rev3(thr_id, work.data, work.target, max_nonce, &hashes_done);
             break;
             
         case ALGO_X11:
@@ -1565,8 +1573,12 @@ static void parse_arg(int key, char *arg, char *pname)
         // some aliases
         if (!strcasecmp("lyra2v2", arg))
             i = opt_algo = ALGO_LYRA2REV2;
+        if (!strcasecmp("lyra2v3", arg))
+            i = opt_algo = ALGO_LYRA2REV3;
         if (!strcasecmp("lyra2re2", arg))
             i = opt_algo = ALGO_LYRA2REV2;
+        if (!strcasecmp("lyra2re3", arg))
+            i = opt_algo = ALGO_LYRA2REV3;
         if (!strcasecmp("argon2", arg))
             i = opt_algo = ALGO_ARGON2D;
         if (!strcasecmp("argon", arg))
